@@ -1,9 +1,9 @@
 package ua.kpi.iasa.onlineradio.models;
 
 public class BroadcastSettings {
-    private int bitrate; // в kbps, наприклад, 128, 192, 320
-    private String format; // наприклад, "MP3", "AAC"
-    private String streamUrl; // URL-адреса потоку
+    private int bitrate;
+    private String format;
+    private String streamUrl;
 
     public BroadcastSettings(int bitrate, String format, String streamUrl) {
         this.bitrate = bitrate;

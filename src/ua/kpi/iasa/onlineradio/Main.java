@@ -3,55 +3,57 @@ package ua.kpi.iasa.onlineradio;
 import ua.kpi.iasa.onlineradio.data.*;
 import ua.kpi.iasa.onlineradio.models.*;
 import ua.kpi.iasa.onlineradio.repositories.*;
+import ua.kpi.iasa.onlineradio.ui.LoginForm;
 
-import java.util.List;
-import java.util.Optional;
+import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("--- Ініціалізація тестового середовища ---");
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {}
 
-        // 1. Створюємо "чисті" репозиторії
-        ITrackRepository trackRepository = new TrackRepository();
-        IUserRepository userRepository = new UserRepository();
-        IPlaylistRepository playlistRepository = new PlaylistRepository();
+        System.out.println("--- Запуск Online Radio System ---");
 
-        // 2. Створюємо та зберігаємо тестові дані
-        // Створюємо користувачів
-        User admin = new Administrator(0, "admin", "hash_of_admin_pass");
-        User listener = new User(0, "listener1", "hash_of_user_pass");
-        userRepository.save(admin);
-        userRepository.save(listener);
-        System.out.println("Створено користувачів.");
-        
-        // Створюємо треки
-        Track track1 = new Track(0, "Bohemian Rhapsody", "Queen", "/music/queen_bohemian.mp3");
-        Track track2 = new Track(0, "Smells Like Teen Spirit", "Nirvana", "/music/nirvana_smells.mp3");
-        trackRepository.save(track1);
-        trackRepository.save(track2);
-        System.out.println("Створено треки.");
+        ITrackRepository trackRepo = new TrackRepository();
+        IUserRepository userRepo = new UserRepository();
+        IPlaylistRepository playlistRepo = new PlaylistRepository();
 
-        // Створюємо плейлист і наповнюємо його треками
-        Playlist rockPlaylist = new Playlist(0, "Rock Classics");
-        rockPlaylist.addTrack(track1); // Додаємо вже існуючі об'єкти
-        rockPlaylist.addTrack(track2);
-        playlistRepository.save(rockPlaylist);
-        System.out.println("Створено плейлист.");
-        
-        System.out.println("\n--- Тестування репозиторіїв ---");
-        
-        System.out.println("\nВсі треки в бібліотеці:");
-        trackRepository.findAll().forEach(System.out::println);
+        MusicLibrary library = new MusicLibrary(trackRepo);
+        Streamer streamer = new Streamer();
 
-        System.out.println("\nВсі користувачі:");
-        userRepository.findAll().forEach(System.out::println);
+        setupTestData(trackRepo, userRepo, playlistRepo);
 
-        System.out.println("\nПлейлист 'Rock Classics':");
-        Optional<Playlist> foundPlaylist = playlistRepository.findById(1);
-        foundPlaylist.ifPresent(p -> {
-            System.out.println("Знайдено: " + p);
-            System.out.println("Треки в ньому:");
-            p.getTracks().forEach(t -> System.out.println("  - " + t.getTitle()));
+        playlistRepo.findById(1).ifPresent(streamer::setActivePlaylist);
+
+        SwingUtilities.invokeLater(() -> {
+
+            new LoginForm(userRepo, library, streamer).setVisible(true);
         });
+    }
+
+    private static void setupTestData(ITrackRepository tRepo, IUserRepository uRepo, IPlaylistRepository pRepo) {
+
+        uRepo.save(new Administrator(0, "admin", "admin")); // логін: admin, пароль: admin
+        uRepo.save(new User(0, "listener", "1234"));        // логін: listener, пароль: 1234
+
+        // Треки
+        Track t1 = new Track(0, "Bohemian Rhapsody", "Queen", "music/queen.mp3");
+        Track t2 = new Track(0, "Smells Like Teen Spirit", "Nirvana", "music/nirvana.mp3");
+        Track t3 = new Track(0, "Shape of You", "Ed Sheeran", "music/ed.mp3");
+        Track t4 = new Track(0, "Believer", "Imagine Dragons", "music/believer.mp3");
+
+        tRepo.save(t1);
+        tRepo.save(t2);
+        tRepo.save(t3);
+        tRepo.save(t4);
+
+        // Плейлист
+        Playlist p1 = new Playlist(0, "Best Rock");
+        p1.addTrack(t1);
+        p1.addTrack(t2);
+        pRepo.save(p1);
+
+        System.out.println("Тестові дані завантажено.");
     }
 }

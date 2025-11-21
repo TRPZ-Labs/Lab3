@@ -45,8 +45,7 @@ public class RadioStation {
      */
     public String getStatistics() {
         System.out.println("Збір статистики для станції '" + this.name + "'...");
-        // Імітація: повертаємо просту статистику
-        // В реальному додатку тут був би аналіз даних з PlaybackEventRepository
+
         int totalTracks = musicLibrary.getAllTracks().size();
         return "Статистика: \n - Всього треків у бібліотеці: " + totalTracks + "\n - Популярний виконавець: Queen";
     }
